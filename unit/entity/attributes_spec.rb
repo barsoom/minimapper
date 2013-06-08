@@ -6,7 +6,7 @@ module Attribute
     include Minimapper::Entity::Core
     include Minimapper::Entity::Attributes
     attribute :id, Integer
-    attribute  :name
+    attribute :name
   end
 
   class AgedUser < User
