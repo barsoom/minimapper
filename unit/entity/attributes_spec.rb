@@ -53,70 +53,70 @@ describe Minimapper::Entity::Attributes, "attributes without type" do
   it "can be set and get with anything" do
     user = entity_class.new
     user.name = "Hello"
-    user.name.should == "Hello"
+    expect(user.name).to eq("Hello")
     user.name = 5
-    user.name.should == 5
+    expect(user.name).to eq(5)
   end
 end
 
 describe Minimapper::Entity::Attributes do
   it "can access attributes set at construction time" do
     entity = Attribute::User.new(:id => 5)
-    entity.id.should == 5
-    entity.attributes[:id].should == 5
+    expect(entity.id).to eq(5)
+    expect(entity.attributes[:id]).to eq(5)
   end
 
   it "can access attributes set through a hash" do
     entity = Attribute::User.new
     entity.attributes = { :id => 5 }
-    entity.id.should == 5
+    expect(entity.id).to eq(5)
     entity.attributes = { "id" => 8 }
-    entity.id.should == 8
+    expect(entity.id).to eq(8)
   end
 
   it "converts typed attributes" do
     entity = Attribute::User.new
     entity.id = "10"
-    entity.id.should == 10
+    expect(entity.id).to eq(10)
     entity.attributes = { :id => "15" }
-    entity.id.should == 15
+    expect(entity.id).to eq(15)
   end
 
   it "can use single line type declarations" do
     task = Attribute::Task.new(:due_at => "2012-01-01 15:00")
-    task.due_at.should == DateTime.parse("2012-01-01 15:00")
+    expect(task.due_at).to eq(DateTime.parse("2012-01-01 15:00"))
   end
 
   it "sets blank values to nil" do
     user = Attribute::User.new
     user.name = "  "
-    user.name.should be_nil
+    expect(user.name).to be_nil
   end
 
   it "symbolizes keys" do
     entity = Attribute::User.new
     entity.attributes = { "id" => "15" }
-    entity.attributes[:id].should == 15
+    expect(entity.attributes[:id]).to eq(15)
   end
 
   it "inherits attributes" do
     user = Attribute::AgedUser.new
     user.name = "Name"
     user.age = 123
-    user.name.should == "Name"
-    user.age.should == 123
+    expect(user.name).to eq("Name")
+    expect(user.age).to eq(123)
   end
 
   it "is possible to override attribute readers with inheritance" do
     user = Attribute::OverridingUser.new
     user.name = "pelle"
-    user.name.should == "PELLE"
+    expect(user.name).to eq("PELLE")
   end
 
   it "is possible to override attribute writers with inheritance" do
     user = Attribute::OverridingUser.new
     user.name = " 123 "
-    user.name.should == "123"
+    expect(user.name).to eq("123")
   end
 end
 
@@ -124,17 +124,17 @@ describe Minimapper::Entity::Attributes, "attributes" do
   it "returns the attributes" do
     entity = Attribute::User.new(:id => 5)
     time = Time.now
-    entity.attributes.should == { :id => 5 }
+    expect(entity.attributes).to eq({ :id => 5 })
   end
 end
 
 describe Minimapper::Entity::Attributes, "self.column_names" do
   it "returns all attributes as strings" do
     # used by some rails plugins
-    Attribute::User.column_names.should == [ "id", "name" ]
+    expect(Attribute::User.column_names).to eq([ "id", "name" ])
   end
 
   it "does not leak between different models" do
-    Attribute::Project.column_names.should == [ "title" ]
+    expect(Attribute::Project.column_names).to eq([ "title" ])
   end
 end

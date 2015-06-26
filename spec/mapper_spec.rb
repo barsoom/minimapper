@@ -54,7 +54,7 @@ describe Minimapper::Mapper, "self.default_include" do
     ProjectMapper.new.create!(project)
 
     user = UserMapper.new.first
-    user.projects_are_eager_loaded.should be_true
+    expect(user.projects_are_eager_loaded).to be true
   end
 end
 
@@ -64,39 +64,39 @@ describe Minimapper::Mapper do
 
   it "can set and get repository" do
     mapper.repository = :repository_instance
-    mapper.repository.should == :repository_instance
+    expect(mapper.repository).to eq(:repository_instance)
   end
 
   describe "#create" do
     it "sets an id on the entity" do
       entity1 = build_valid_entity
-      entity1.id.should be_nil
+      expect(entity1.id).to be_nil
       mapper.create(entity1)
-      entity1.id.should > 0
+      expect(entity1.id).to be > 0
 
       entity2 = build_valid_entity
       mapper.create(entity2)
-      entity2.id.should == entity1.id + 1
+      expect(entity2.id).to eq(entity1.id + 1)
     end
 
     it "marks the entity as persisted" do
       entity1 = build_valid_entity
-      entity1.should_not be_persisted
+      expect(entity1).not_to be_persisted
       mapper.create(entity1)
-      entity1.should be_persisted
+      expect(entity1).to be_persisted
     end
 
     it "returns the id" do
       id = mapper.create(build_valid_entity)
-      id.should be_kind_of(Fixnum)
-      id.should > 0
+      expect(id).to be_kind_of(Fixnum)
+      expect(id).to be > 0
     end
 
     it "does not store by reference" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.last.object_id.should_not == entity.object_id
-      mapper.last.attributes[:name].should == "test"
+      expect(mapper.last.object_id).not_to eq(entity.object_id)
+      expect(mapper.last.attributes[:name]).to eq("test")
     end
 
     it "validates the record before saving" do
@@ -104,23 +104,23 @@ describe Minimapper::Mapper do
       def entity.valid?
         false
       end
-      mapper.create(entity).should be_false
+      expect(mapper.create(entity)).to be false
     end
 
     it "calls before_save and after_save on the mapper" do
       entity = build_valid_entity
       record = ProjectMapper::Record.new
-      ProjectMapper::Record.stub(:new => record)
-      mapper.should_receive(:before_save).with(entity, record)
-      mapper.should_receive(:after_save).with(entity, record)
+      allow(ProjectMapper::Record).to receive_messages(:new => record)
+      expect(mapper).to receive(:before_save).with(entity, record)
+      expect(mapper).to receive(:after_save).with(entity, record)
       mapper.create(entity)
     end
 
     it "calls after_create on the mapper" do
       entity = build_valid_entity
       record = ProjectMapper::Record.new
-      ProjectMapper::Record.stub(:new => record)
-      mapper.should_receive(:after_create).with(entity, record)
+      allow(ProjectMapper::Record).to receive_messages(:new => record)
+      expect(mapper).to receive(:after_create).with(entity, record)
       mapper.create(entity)
     end
 
@@ -129,9 +129,9 @@ describe Minimapper::Mapper do
       def entity.valid?
         false
       end
-      mapper.should_receive(:before_save)
-      mapper.should_not_receive(:after_save)
-      mapper.should_not_receive(:after_create)
+      expect(mapper).to receive(:before_save)
+      expect(mapper).not_to receive(:after_save)
+      expect(mapper).not_to receive(:after_create)
       mapper.create(entity)
     end
 
@@ -141,23 +141,23 @@ describe Minimapper::Mapper do
       mapper.create(entity)
 
       stored_entity = mapper.find(entity.id)
-      stored_entity.attributes[:visible].should be_nil
-      stored_entity.attributes[:name].should == "Joe"
+      expect(stored_entity.attributes[:visible]).to be_nil
+      expect(stored_entity.attributes[:name]).to eq("Joe")
 
       entity = Project.new
       entity.attributes = { :visible => true, :name => "Joe" }
-      ProjectMapper::Record.stub(:protected_attributes => [])
-      lambda { mapper.create(entity) }.should raise_error(ActiveModel::MassAssignmentSecurity::Error)
+      allow(ProjectMapper::Record).to receive_messages(:protected_attributes => [])
+      expect { mapper.create(entity) }.to raise_error(ActiveModel::MassAssignmentSecurity::Error)
     end
 
     it "copies record validation errors to entity" do
       old_entity = build_entity(:email => "joe@example.com")
       mapper.create(old_entity)
-      old_entity.mapper_errors.should == []
+      expect(old_entity.mapper_errors).to eq([])
 
       new_entity = build_entity(:email => "joe@example.com")
       mapper.create(new_entity)
-      new_entity.mapper_errors.should == [ [:email, "has already been taken"] ]
+      expect(new_entity.mapper_errors).to eq([ [:email, "has already been taken"] ])
     end
 
     it "can revalidate on record validation errors" do
@@ -166,11 +166,11 @@ describe Minimapper::Mapper do
 
       new_entity = build_entity(:email => "joe@example.com")
       mapper.create(new_entity)
-      new_entity.mapper_errors.should == [ [:email, "has already been taken"] ]
+      expect(new_entity.mapper_errors).to eq([ [:email, "has already been taken"] ])
 
       new_entity.attributes = { :email => "something.else@example.com" }
       mapper.create(new_entity)
-      new_entity.should be_valid
+      expect(new_entity).to be_valid
     end
   end
 
@@ -178,7 +178,7 @@ describe Minimapper::Mapper do
     it "can create records" do
       entity = build_valid_entity
       mapper.create!(entity)
-      entity.should be_persisted
+      expect(entity).to be_persisted
     end
 
     it "raises Minimapper::EntityInvalid when the entity is invalid" do
@@ -186,7 +186,7 @@ describe Minimapper::Mapper do
       def entity.valid?
         false
       end
-      lambda { mapper.create!(entity) }.should raise_error(Minimapper::EntityInvalid)
+      expect { mapper.create!(entity) }.to raise_error(Minimapper::EntityInvalid)
     end
   end
 
@@ -195,9 +195,9 @@ describe Minimapper::Mapper do
       entity = build_valid_entity
       mapper.create(entity)
       found_entity = mapper.find(entity.id)
-      found_entity.attributes[:name].should == "test"
-      found_entity.id.should == entity.id
-      found_entity.should be_kind_of(Minimapper::Entity::Core)
+      expect(found_entity.attributes[:name]).to eq("test")
+      expect(found_entity.id).to eq(entity.id)
+      expect(found_entity).to be_kind_of(Minimapper::Entity::Core)
     end
 
     it "supports string ids" do
@@ -209,14 +209,14 @@ describe Minimapper::Mapper do
     it "does not return the same instance" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.find(entity.id).object_id.should_not == entity.object_id
-      mapper.find(entity.id).object_id.should_not == mapper.find(entity.id).object_id
+      expect(mapper.find(entity.id).object_id).not_to eq(entity.object_id)
+      expect(mapper.find(entity.id).object_id).not_to eq(mapper.find(entity.id).object_id)
     end
 
     it "calls after_find on the mapper" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.should_receive(:after_find)
+      expect(mapper).to receive(:after_find)
       found_entity = mapper.find(entity.id)
     end
 
@@ -224,11 +224,11 @@ describe Minimapper::Mapper do
       entity = build_valid_entity
       mapper.create(entity)
       found_entity = mapper.find(entity.id)
-      found_entity.should be_persisted
+      expect(found_entity).to be_persisted
     end
 
     it "fails when an entity can not be found" do
-      lambda { mapper.find(-1) }.should raise_error(ActiveRecord::RecordNotFound)
+      expect { mapper.find(-1) }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 
@@ -237,9 +237,9 @@ describe Minimapper::Mapper do
       entity = build_valid_entity
       mapper.create(entity)
       found_entity = mapper.find_by_id(entity.id)
-      found_entity.attributes[:name].should == "test"
-      found_entity.id.should == entity.id
-      found_entity.should be_kind_of(Minimapper::Entity::Core)
+      expect(found_entity.attributes[:name]).to eq("test")
+      expect(found_entity.id).to eq(entity.id)
+      expect(found_entity).to be_kind_of(Minimapper::Entity::Core)
     end
 
     it "supports string ids" do
@@ -251,12 +251,12 @@ describe Minimapper::Mapper do
     it "does not return the same instance" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.find_by_id(entity.id).object_id.should_not == entity.object_id
-      mapper.find_by_id(entity.id).object_id.should_not == mapper.find_by_id(entity.id).object_id
+      expect(mapper.find_by_id(entity.id).object_id).not_to eq(entity.object_id)
+      expect(mapper.find_by_id(entity.id).object_id).not_to eq(mapper.find_by_id(entity.id).object_id)
     end
 
     it "returns nil when an entity can not be found" do
-      mapper.find_by_id(-1).should be_nil
+      expect(mapper.find_by_id(-1)).to be_nil
     end
   end
 
@@ -267,16 +267,16 @@ describe Minimapper::Mapper do
       mapper.create(first_created_entity)
       mapper.create(second_created_entity)
       all_entities = mapper.all
-      all_entities.map(&:id).should include(first_created_entity.id)
-      all_entities.map(&:id).should include(second_created_entity.id)
-      all_entities.first.should be_kind_of(Minimapper::Entity::Core)
+      expect(all_entities.map(&:id)).to include(first_created_entity.id)
+      expect(all_entities.map(&:id)).to include(second_created_entity.id)
+      expect(all_entities.first).to be_kind_of(Minimapper::Entity::Core)
     end
 
     it "does not return the same instances" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.all.first.object_id.should_not == entity.object_id
-      mapper.all.first.object_id.should_not == mapper.all.first.object_id
+      expect(mapper.all.first.object_id).not_to eq(entity.object_id)
+      expect(mapper.all.first.object_id).not_to eq(mapper.all.first.object_id)
     end
   end
 
@@ -285,19 +285,19 @@ describe Minimapper::Mapper do
       first_created_entity = build_valid_entity
       mapper.create(first_created_entity)
       mapper.create(build_valid_entity)
-      mapper.first.id.should == first_created_entity.id
-      mapper.first.should be_kind_of(entity_class)
+      expect(mapper.first.id).to eq(first_created_entity.id)
+      expect(mapper.first).to be_kind_of(entity_class)
     end
 
     it "does not return the same instance" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.first.object_id.should_not == entity.object_id
-      mapper.first.object_id.should_not == mapper.first.object_id
+      expect(mapper.first.object_id).not_to eq(entity.object_id)
+      expect(mapper.first.object_id).not_to eq(mapper.first.object_id)
     end
 
     it "returns nil when there is no entity" do
-      mapper.first.should be_nil
+      expect(mapper.first).to be_nil
     end
   end
 
@@ -306,19 +306,19 @@ describe Minimapper::Mapper do
       last_created_entity = build_valid_entity
       mapper.create(build_valid_entity)
       mapper.create(last_created_entity)
-      mapper.last.id.should == last_created_entity.id
-      mapper.last.should be_kind_of(entity_class)
+      expect(mapper.last.id).to eq(last_created_entity.id)
+      expect(mapper.last).to be_kind_of(entity_class)
     end
 
     it "does not return the same instance" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.last.object_id.should_not == entity.object_id
-      mapper.last.object_id.should_not == mapper.last.object_id
+      expect(mapper.last.object_id).not_to eq(entity.object_id)
+      expect(mapper.last.object_id).not_to eq(mapper.last.object_id)
     end
 
     it "returns nil when there is no entity" do
-      mapper.last.should be_nil
+      expect(mapper.last).to be_nil
     end
   end
 
@@ -329,7 +329,7 @@ describe Minimapper::Mapper do
       entity.attributes[:email] = "test@example.com"
       mapper.reload(entity)
       entity.attributes[:email] = "foo@example.com"
-      mapper.reload(entity).object_id.should_not == entity.object_id
+      expect(mapper.reload(entity).object_id).not_to eq(entity.object_id)
     end
   end
 
@@ -337,7 +337,7 @@ describe Minimapper::Mapper do
     it "returns the number of entities" do
       mapper.create(build_valid_entity)
       mapper.create(build_valid_entity)
-      mapper.count.should == 2
+      expect(mapper.count).to eq(2)
     end
   end
 
@@ -347,11 +347,11 @@ describe Minimapper::Mapper do
       mapper.create(entity)
 
       entity.attributes = { :name => "Updated" }
-      mapper.last.attributes[:name].should == "test"
+      expect(mapper.last.attributes[:name]).to eq("test")
 
       mapper.update(entity)
-      mapper.last.id.should == entity.id
-      mapper.last.attributes[:name].should == "Updated"
+      expect(mapper.last.id).to eq(entity.id)
+      expect(mapper.last.attributes[:name]).to eq("Updated")
     end
 
     it "does not update and returns false when the entity isn't valid" do
@@ -362,8 +362,8 @@ describe Minimapper::Mapper do
         false
       end
 
-      mapper.update(entity).should be_false
-      mapper.last.attributes[:name].should == "test"
+      expect(mapper.update(entity)).to be false
+      expect(mapper.last.attributes[:name]).to eq("test")
     end
 
     it "calls before_save and after_save on the mapper" do
@@ -371,10 +371,10 @@ describe Minimapper::Mapper do
       mapper.create(entity)
 
       record = ProjectMapper::Record.last
-      ProjectMapper::Record.stub(:find_by_id => record)
+      allow(ProjectMapper::Record).to receive_messages(:find_by_id => record)
 
-      mapper.should_receive(:before_save).with(entity, record)
-      mapper.should_receive(:after_save).with(entity, record)
+      expect(mapper).to receive(:before_save).with(entity, record)
+      expect(mapper).to receive(:after_save).with(entity, record)
       mapper.update(entity)
     end
 
@@ -383,29 +383,29 @@ describe Minimapper::Mapper do
       mapper.create(entity)
 
       record = ProjectMapper::Record.last
-      ProjectMapper::Record.stub(:find_by_id => record)
+      allow(ProjectMapper::Record).to receive_messages(:find_by_id => record)
 
-      mapper.should_receive(:after_save)
-      mapper.should_not_receive(:after_create)
+      expect(mapper).to receive(:after_save)
+      expect(mapper).not_to receive(:after_create)
       mapper.update(entity)
     end
 
     it "returns true" do
       entity = build_valid_entity
       mapper.create(entity)
-      mapper.update(entity).should == true
+      expect(mapper.update(entity)).to eq(true)
     end
 
     it "fails when the entity does not have an id" do
       entity = build_valid_entity
-      lambda { mapper.update(entity) }.should raise_error(ActiveRecord::RecordNotFound)
+      expect { mapper.update(entity) }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "fails when the entity no longer exists" do
       entity = build_valid_entity
       mapper.create(entity)
       mapper.delete_all
-      lambda { mapper.update(entity) }.should raise_error(ActiveRecord::RecordNotFound)
+      expect { mapper.update(entity) }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "does not include protected attributes" do
@@ -415,11 +415,11 @@ describe Minimapper::Mapper do
       entity.attributes = { :visible => true, :name => "Joe" }
       mapper.update(entity)
       stored_entity = mapper.find(entity.id)
-      stored_entity.attributes[:visible].should be_nil
-      stored_entity.attributes[:name].should == "Joe"
+      expect(stored_entity.attributes[:visible]).to be_nil
+      expect(stored_entity.attributes[:name]).to eq("Joe")
 
-      ProjectMapper::Record.stub(:protected_attributes => [])
-      lambda { mapper.update(entity) }.should raise_error(ActiveModel::MassAssignmentSecurity::Error)
+      allow(ProjectMapper::Record).to receive_messages(:protected_attributes => [])
+      expect { mapper.update(entity) }.to raise_error(ActiveModel::MassAssignmentSecurity::Error)
     end
 
     it "copies record validation errors to entity" do
@@ -428,11 +428,11 @@ describe Minimapper::Mapper do
 
       new_entity = Project.new
       mapper.create(new_entity)
-      new_entity.mapper_errors.should == []
+      expect(new_entity.mapper_errors).to eq([])
 
       new_entity.attributes = { :email => "joe@example.com" }
       mapper.update(new_entity)
-      new_entity.mapper_errors.should == [ [:email, "has already been taken"] ]
+      expect(new_entity.mapper_errors).to eq([ [:email, "has already been taken"] ])
     end
 
     it "can revalidate on record validation errors" do
@@ -441,15 +441,15 @@ describe Minimapper::Mapper do
 
       new_entity = Project.new
       mapper.create(new_entity)
-      new_entity.mapper_errors.should == []
+      expect(new_entity.mapper_errors).to eq([])
 
       new_entity.attributes = { :email => "joe@example.com" }
       mapper.update(new_entity)
-      new_entity.mapper_errors.should == [ [:email, "has already been taken"] ]
+      expect(new_entity.mapper_errors).to eq([ [:email, "has already been taken"] ])
 
       new_entity.attributes = { :email => "something.else@example.com" }
       mapper.update(new_entity)
-      new_entity.should be_valid
+      expect(new_entity).to be_valid
     end
   end
 
@@ -459,7 +459,7 @@ describe Minimapper::Mapper do
       mapper.create(entity)
       entity.attributes[:email] = "updated@example.com"
       mapper.update!(entity)
-      mapper.reload(entity).attributes[:email].should == "updated@example.com"
+      expect(mapper.reload(entity).attributes[:email]).to eq("updated@example.com")
     end
 
     it "raises Minimapper::EntityInvalid when the entity is invalid" do
@@ -468,7 +468,7 @@ describe Minimapper::Mapper do
       def entity.valid?
         false
       end
-      lambda { mapper.update!(entity) }.should raise_error(Minimapper::EntityInvalid)
+      expect { mapper.update!(entity) }.to raise_error(Minimapper::EntityInvalid)
     end
   end
 
@@ -479,27 +479,27 @@ describe Minimapper::Mapper do
       mapper.create(entity)
       mapper.create(build_valid_entity)
       mapper.delete(entity)
-      mapper.all.size.should == 1
-      mapper.first.id.should_not == removed_entity_id
+      expect(mapper.all.size).to eq(1)
+      expect(mapper.first.id).not_to eq(removed_entity_id)
     end
 
     it "marks the entity as no longer persisted" do
       entity = build_valid_entity
       mapper.create(entity)
-      entity.should be_persisted
+      expect(entity).to be_persisted
       mapper.delete(entity)
-      entity.should_not be_persisted
+      expect(entity).not_to be_persisted
     end
 
     it "fails when the entity does not have an id" do
       entity = entity_class.new
-      lambda { mapper.delete(entity) }.should raise_error(ActiveRecord::RecordNotFound)
+      expect { mapper.delete(entity) }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it "fails when the entity can not be found" do
       entity = entity_class.new
       entity.id = -1
-      lambda { mapper.delete(entity) }.should raise_error(ActiveRecord::RecordNotFound)
+      expect { mapper.delete(entity) }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 
@@ -509,12 +509,12 @@ describe Minimapper::Mapper do
       mapper.create(entity)
       mapper.create(build_valid_entity)
       mapper.delete_by_id(entity.id)
-      mapper.all.size.should == 1
-      mapper.first.id.should_not == entity.id
+      expect(mapper.all.size).to eq(1)
+      expect(mapper.first.id).not_to eq(entity.id)
     end
 
     it "fails when an entity can not be found" do
-      lambda { mapper.delete_by_id(-1) }.should raise_error(ActiveRecord::RecordNotFound)
+      expect { mapper.delete_by_id(-1) }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 
@@ -522,7 +522,7 @@ describe Minimapper::Mapper do
     it "empties the mapper" do
       mapper.create(build_valid_entity)
       mapper.delete_all
-      mapper.all.should == []
+      expect(mapper.all).to eq([])
     end
   end
 
