@@ -6,7 +6,7 @@ module Minimapper
   module Entity
     module Rails
       def to_param
-        id
+        id.to_s
       end
 
       # Implemented in core.

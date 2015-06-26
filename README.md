@@ -33,6 +33,8 @@ The API may not be entirely stable yet and there are probably edge cases that ar
 
 This gem is tested against all major rubies in 1.8, 1.9 and 2.0, see [.travis.yml](https://github.com/joakimk/minimapper/blob/master/.travis.yml). For each ruby version, the mapper is tested against SQLite3, PostgreSQL and MySQL.
 
+Version 0.11.0 or newer works with Rails 4. Previous versions works with Rails 3.
+
 ### Only the most basic API
 
 This library only implements the most basic persistence API (mostly just CRUD). Any significant additions will be made into separate gems (like [minimapper-extras](https://github.com/barsoom/minimapper-extras)). The reasons for this are:

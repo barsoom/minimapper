@@ -31,7 +31,8 @@ describe Minimapper::Entity::Rails do
   it "responds to to_param" do
     entity = RailsEntity.new
     entity.id = 5
-    expect(entity.to_param).to eq(5)
+    expect(entity.to_param).to be_a(String)
+    expect(entity.to_param).to eq("5")
   end
 
   # for rails form helpers

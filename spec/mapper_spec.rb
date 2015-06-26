@@ -16,14 +16,11 @@ class ProjectMapper < Minimapper::Mapper
   private
 
   class Record < ActiveRecord::Base
-    attr_protected :visible
-
     validates :email,
       :uniqueness => true,
       :allow_nil => true
 
     self.table_name = :projects
-    self.mass_assignment_sanitizer = :strict
   end
 end
 
@@ -38,7 +35,6 @@ class UserMapper < Minimapper::Mapper
 
   class Record < ActiveRecord::Base
     self.table_name = :users
-    self.mass_assignment_sanitizer = :strict
 
     has_many :projects, :class_name => ProjectMapper::Record, :foreign_key => :user_id
   end
@@ -133,21 +129,6 @@ describe Minimapper::Mapper do
       expect(mapper).not_to receive(:after_save)
       expect(mapper).not_to receive(:after_create)
       mapper.create(entity)
-    end
-
-    it "does not include protected attributes" do
-      # because it leads to exceptions when mass_assignment_sanitizer is set to strict
-      entity = build_entity(:visible => true, :name => "Joe")
-      mapper.create(entity)
-
-      stored_entity = mapper.find(entity.id)
-      expect(stored_entity.attributes[:visible]).to be_nil
-      expect(stored_entity.attributes[:name]).to eq("Joe")
-
-      entity = Project.new
-      entity.attributes = { :visible => true, :name => "Joe" }
-      allow(ProjectMapper::Record).to receive_messages(:protected_attributes => [])
-      expect { mapper.create(entity) }.to raise_error(ActiveModel::MassAssignmentSecurity::Error)
     end
 
     it "copies record validation errors to entity" do
@@ -406,20 +387,6 @@ describe Minimapper::Mapper do
       mapper.create(entity)
       mapper.delete_all
       expect { mapper.update(entity) }.to raise_error(ActiveRecord::RecordNotFound)
-    end
-
-    it "does not include protected attributes" do
-      entity = Project.new
-      mapper.create(entity)
-
-      entity.attributes = { :visible => true, :name => "Joe" }
-      mapper.update(entity)
-      stored_entity = mapper.find(entity.id)
-      expect(stored_entity.attributes[:visible]).to be_nil
-      expect(stored_entity.attributes[:name]).to eq("Joe")
-
-      allow(ProjectMapper::Record).to receive_messages(:protected_attributes => [])
-      expect { mapper.update(entity) }.to raise_error(ActiveModel::MassAssignmentSecurity::Error)
     end
 
     it "copies record validation errors to entity" do

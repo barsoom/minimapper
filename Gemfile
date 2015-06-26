@@ -5,7 +5,7 @@ source 'https://rubygems.org'
 #
 # Also locked to below rails 4.0 as our specs use rails 3 features. Need to look into
 # if there are any issues with rails 4.
-gem "activerecord", "< 4.0"
+gem "activerecord", "< 5.0"
 gem "rspec"
 gem "backports"
 

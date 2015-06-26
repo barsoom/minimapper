@@ -105,16 +105,8 @@ module Minimapper
       end
     end
 
-    def accessible_attributes(entity)
-      entity.attributes.reject { |k, v| protected_attributes.include?(k.to_s) }
-    end
-
-    def protected_attributes
-      record_class.protected_attributes
-    end
-
     def copy_attributes_to_record(record, entity)
-      record.attributes = accessible_attributes(entity)
+      record.attributes = entity.attributes
     end
 
     def copy_attributes_to_entity(record, entity)
