@@ -40,7 +40,7 @@ module Minimapper
     end
 
     def all
-      entities_for query_scope.all
+      entities_for query_scope
     end
 
     def first
